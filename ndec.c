@@ -10,6 +10,7 @@ typedef int32_t i32;
 
 u32 * romd;
 u32 * outd;
+char clean; // whether to do a clean decompress
 
 i32 get_ftable_offset()
 {
@@ -106,6 +107,12 @@ int main(int argc, char * argv[])
         puts("Usage: ndec inrom outrom");
         return 0;
     }
+	
+	clean = 0;
+	if(argc >= 4)
+	{
+		clean = (strcmp(argv[3], "-clean") == 0);
+	}
     
     romd = (u32*)malloc(0x04000000);
     outd = (u32*)malloc(0x04000000);
@@ -126,9 +133,12 @@ int main(int argc, char * argv[])
     printf("Filesystem: %X ~ %X\n", get_file_data(2).vstart, get_file_data(2).vend);
     printf("Number of files: %X\n", ftabnum);
 	
-	puts("Cleaning file boundaries.");
-	unsigned long offset = get_file_data(2).vend;
-	memset((uint8_t*)(outd)+offset,0,0x04000000-offset);
+	if(clean)
+	{
+		puts("Cleaning file boundaries.");
+		unsigned long offset = get_file_data(2).vend;
+		memset((uint8_t*)(outd)+offset,0,0x04000000-offset);
+    }
 	
     puts("Decompressing files...");
     long i = ftabnum-1; // signed to break out of while loop
